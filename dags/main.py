@@ -14,8 +14,15 @@ import yaml
 import psycopg2
 from psycopg2 import sql
 from sqlalchemy import create_engine, text
+from great_expectations_provider.operators.great_expectations import GreatExpectationsOperator
+from io import StringIO
 
-import os
+from tasks.datatransform_load import loadingtransform_data
+from tasks.load import load_dataset
+from tasks.test_loading import test_loading
+from tasks.Transform import transform_data
+from tasks.create_table import create_table
+from tasks.create_transformtable import create_transformdatabase
 
 
 default_args = {
@@ -35,126 +42,69 @@ dag = DAG(
 
 
 
-
-def load_dataset(ti):
-    """
-    Calling the dataset, to be able to use it in csv
-    """
-    import pandas as pd
-
-    api_url = "https://data.ct.gov/resource/rybz-nyjw.csv"
-    api_limit = 1000
-    offset = 0
-    df = []
-
-    while True:
-        dataframe_url = f"{api_url}?$limit={api_limit}&$offset={offset}"
-        df_chunk = pd.read_csv(dataframe_url)
-
-        if df_chunk.empty:
-            break
-        df.append(df_chunk)
-        offset += api_limit
-        logging.info(f"Current offset {offset}")
-    df_complete = pd.concat(df, ignore_index=True)
-    df_json = df_complete.to_json(orient="split")
-
-    ti.xcom_push(key="Dataset", value=df_json)
-
-
-
-
-def test_loading(ti):
-    csv = ti.xcom_pull(key='Dataset')
-    if not csv:
-        raise ValueError("Not any csv found")
-    df = pd.read_json(csv, orient='split')
-
-
-    
-
-    conn = BaseHook.get_connection("postgres_database")
-
-    engine = create_engine(f"postgresql+psycopg2://{conn.login}:{conn.password}@{conn.host}:{conn.port}/{conn.schema}")
-    try:
-        df.to_sql('drug_database', engine, if_exists='append', index=False, method='multi')
-        logging.info("Bulk insert completed successfully.")
-    except Exception as e:
-        logging.error(f"Error during bulk insert: {e}")
-        raise
-
-
-
-
 load_dataset_task = PythonOperator(
     task_id='load_dataset',
     python_callable=load_dataset,
     dag=dag,
 )
-create_table_task = SQLExecuteQueryOperator(
+create_table_task = PythonOperator(
     task_id="create_table",
-    conn_id="postgres_database",
-    sql="""
-        CREATE TABLE IF NOT EXISTS drug_database (
-            id SERIAL PRIMARY KEY,
-            date VARCHAR(100) NOT NULL,
-            datetype VARCHAR(100),
-            age INT,
-            sex VARCHAR(10),
-            race VARCHAR(100),
-            ethnicity VARCHAR(100),
-            residencecity VARCHAR(100),
-            residencecounty VARCHAR(100),
-            residencestate VARCHAR(100),
-            injurycity VARCHAR(100),
-            injurycounty VARCHAR(100),
-            injurystate VARCHAR(100),
-            injuryplace VARCHAR(100),
-            descriptionofinjury VARCHAR(200),
-            deathcity VARCHAR(100),
-            deathcounty VARCHAR(100),
-            death_state VARCHAR(100),
-            location VARCHAR(100),
-            locationifother VARCHAR(100),
-            cod VARCHAR(300),
-            mannerofdeath VARCHAR(100),
-            othersignifican VARCHAR(150),
-            heroin VARCHAR(100),
-            heroin_dc VARCHAR(100),
-            cocaine VARCHAR(100),
-            fentanyl VARCHAR(100),
-            fentanylanalogue VARCHAR(100),
-            oxycodone VARCHAR(100),
-            oxymorphone	VARCHAR(100),
-            ethanol	VARCHAR(100),
-            hydrocodone	VARCHAR(100),
-            benzodiazepine VARCHAR(100),
-            methadone VARCHAR(100),
-            meth_amphetamine	VARCHAR(100),
-            amphet VARCHAR(100),
-            tramad VARCHAR(100),
-            hydromorphone VARCHAR(100),
-            morphine_notheroin VARCHAR(100),
-            xylazine VARCHAR(100),
-            gabapentin VARCHAR(100),
-            opiatenos VARCHAR(100),
-            heroin_morph_codeine VARCHAR(100),
-            other_opioid VARCHAR(100),
-            anyopioid VARCHAR(100),
-            other VARCHAR(100),
-            residencecitygeo VARCHAR(100),
-            injurycitygeo VARCHAR(100),
-            deathcitygeo VARCHAR(100)
-
-        );
-    """,
+    python_callable=create_table,  # Use the imported function
     dag=dag
 )
-
 
 test_loading_task = PythonOperator(
     task_id='test_loading',
     python_callable=test_loading,
     dag=dag,
 )
-load_dataset_task >> create_table_task >> test_loading_task
+
+gx_validation_task = GreatExpectationsOperator(
+    task_id="gx_validate_pg",
+    conn_id="postgres_database",
+    data_context_root_dir="/opt/airflow/gx",
+    schema="public",
+    data_asset_name="drug_database",
+    expectation_suite_name="drugs_database_suite",
+    return_json_dict=True,
+    dag=dag
+)
+transform_task = PythonOperator(
+    task_id='Transformation',
+    python_callable=transform_data,
+    dag=dag
+)
+transform_database = PythonOperator(
+    task_id='creating_transform_database',
+    python_callable=create_transformdatabase,
+    dag=dag
+)
+
+loadtransform_db = PythonOperator(
+    task_id='Loading_transform_data',
+    python_callable=loadingtransform_data,
+    dag=dag
+
+)
+gx_validation_task_transform = GreatExpectationsOperator(
+    task_id="gx_validate_transform",
+    conn_id="postgres_database",
+    data_context_root_dir="/opt/airflow/gx",
+    schema="public",
+    data_asset_name="transformed_db",
+    expectation_suite_name="expectations_tansform",
+    return_json_dict=True,
+    dag=dag
+)
+gx_validation_task_date = GreatExpectationsOperator(
+    task_id="gx_validate_date",
+    conn_id="postgres_database",
+    data_context_root_dir="/opt/airflow/gx",
+    schema="public",
+    data_asset_name="tdate_db",
+    expectation_suite_name="expectations_date",
+    return_json_dict=True,
+    dag=dag
+)
+[load_dataset_task, create_table_task] >> test_loading_task >> gx_validation_task >> transform_task >> transform_database >> loadtransform_db >> [gx_validation_task_transform,gx_validation_task_date]
+

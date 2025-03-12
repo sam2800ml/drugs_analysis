@@ -1,0 +1,96 @@
+{
+    "data_asset_type":null,
+    "expectation_suite_name":"expectations_date",
+    "expectations":[
+        {
+            "expectation_context":{
+                "description":"the column date_id exists"
+            },
+            "expectation_type":"expect_column_to_exist",
+            "kwargs":{
+                "column":"date_id"
+            },
+            "meta":{}
+        },
+        {
+            "expectation_context":{
+                "description":"the column year exists"
+            },
+            "expectation_type":"expect_column_to_exist",
+            "kwargs":{
+                "column":"year"
+            },
+            "meta":{}
+        },
+        {
+            "expectation_context":{
+                "description":"the column month exists"
+            },
+            "expectation_type":"expect_column_to_exist",
+            "kwargs":{
+                "column":"month"
+            },
+            "meta":{}
+        },
+        {
+            "expectation_context":{
+                "description":"the column day exists"
+            },
+            "expectation_type":"expect_column_to_exist",
+            "kwargs":{
+                "column":"day"
+            },
+            "meta":{}
+        },
+        {
+            "expectation_context":{
+                "description": "Check that the column date_id all the values are unique"
+            },
+            "expectation_type":"expect_column_values_to_be_unique",
+            "kwargs":{
+                "column":"date_id"
+            },
+            "meta":{}
+        },
+        {
+            "expectation_context":{
+                "description":"Check that the date_id has not null values"
+            },
+            "expectation_type":"expect_column_values_to_not_be_null",
+            "kwargs":{
+                "column":"date_id"
+            },
+            "meta":{}
+        },
+        {
+            "expectation_context":{
+                "description":"Check that the year has not null values"
+            },
+            "expectation_type":"expect_column_values_to_not_be_null",
+            "kwargs":{
+                "column":"year"
+            },
+            "meta":{}
+        },
+        {
+            "expectation_context":{
+                "description":"Check that the month has not null values"
+            },
+            "expectation_type":"expect_column_values_to_not_be_null",
+            "kwargs":{
+                "column":"month"
+            },
+            "meta":{}
+        },
+        {
+            "expectation_context":{
+                "description":"Check that the day has not null values"
+            },
+            "expectation_type":"expect_column_values_to_not_be_null",
+            "kwargs":{
+                "column":"day"
+            },
+            "meta":{}
+        }
+    ]
+}

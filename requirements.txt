@@ -4,3 +4,8 @@ psycopg2-binary
 sqlalchemy
 apache-airflow
 apache-airflow-providers-postgres
+airflow-provider-great-expectations
+great-expectations
+matplotlib
+seaborn
+numpy

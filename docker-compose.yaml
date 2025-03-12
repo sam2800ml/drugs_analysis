@@ -77,6 +77,7 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
+    - ./gx:/opt/airflow/gx  
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
@@ -238,6 +239,19 @@ services:
         fi
         mkdir -p /sources/logs /sources/dags /sources/plugins
         chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
+        # ✅ Install Great Expectations if not installed
+        if ! python -c "import great_expectations" &>/dev/null; then
+          echo "Installing Great Expectations..."
+          pip install great_expectations
+        fi
+
+        # ✅ Initialize Great Expectations only if not already initialized
+        if [ ! -d "/sources/gx/great_expectations" ]; then
+          echo "Initializing Great Expectations..."
+          great_expectations init
+        else
+          echo "Great Expectations is already initialized."
+        fi
         exec /entrypoint airflow version
     # yamllint enable rule:line-length
     environment:
