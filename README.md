@@ -1,5 +1,30 @@
-# Project Setup and Execution Guide
+# ETL Pipeline with Apache Airflow, Great Expectations, and Docker
 
+## 📌 Project Overview
+
+This repository contains an ETL pipeline built using Apache Airflow for orchestrating workflows, Great Expectations for data quality validation, and Docker for containerizing the process. The project demonstrates how to extract, transform, and load (ETL) data efficiently while ensuring data integrity.
+
+├── dags/                                 # Airflow DAGs for orchestrating ETL
+|   ├── tasks/                            # This is where all the task are
+|   |    ├─── create_table.py             # Creation of the first drug_database
+|   |    ├─── create_transformtable.py    # Creation of the transforms tables tdate_db, transformed_db
+|   |    ├─── datatransform_load.py       # Loading the transform data into the corresponded tables
+|   |    ├─── load.py                     # Calling the dataset
+|   |    ├─── test_loading.py             # Loading the dataset into the first table 
+|   |    ├─── Transform.py                # All the transformations applied
+|   ├── main.py                           # This isthe creation of the dags
+├── notebooks/                            # Jupyter notebooks for EDA
+│   ├── eda_before.ipynb                  # EDA before transformations
+│   ├── eda_after.ipynb                   # EDA after transformations
+├── gx/                                   # Great Expectations configurations
+│   ├── expectations/                     # Data validation rules
+|   |    ├─── drugs_database_suite.json   # Expectations for the first table
+|   |    ├─── expectations_date.json      # Expectations for the date table
+|   |    ├─── expectations_transform.json # Expectation for the transform table
+├── docker-compose.yml                    # Docker setup for the project
+├── Dockerfile                            # Docker setup for the project
+├── requirements.txt                      # Python dependencies
+└── README.md                             # Project documentation
 ## Prerequisites
 
 Before running the project, ensure you have:
@@ -22,6 +47,7 @@ Make sure Docker is running, then execute:
 
 ```bash
 docker compose build
+echo -e "AIRFLOW_UID=$(id -u)" > .env
 docker compose up -d
 ```
 

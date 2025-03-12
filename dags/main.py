@@ -37,7 +37,10 @@ dag = DAG(
     'Fetch_data_from_csv',
     default_args=default_args,
     description="This is a simple pipeline to be bale to load a file into a database using python",
-    schedule=timedelta(days=1)
+    schedule_interval='@daily',
+    catchup=False,
+    max_active_runs=1,  # Limits concurrent DAG runs
+    concurrency=1
 )
 
 

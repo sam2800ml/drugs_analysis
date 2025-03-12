@@ -6,6 +6,11 @@ from io import StringIO
 from sqlalchemy import DDL
 
 def loadingtransform_data(ti):
+
+    """
+    
+    """
+
     df_json = ti.xcom_pull(key='transform_Dataset')
     df = pd.read_json(StringIO(df_json), orient='split')
     df_date = df[['date_id','year','month','day']]
