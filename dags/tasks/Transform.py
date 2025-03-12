@@ -106,6 +106,15 @@ ethnicity_mapping = {
 
 
 def creating_dateid(df,date_column):
+    """
+    Creates a 'date_id' column and extracts year, month, and day from a date column.
+    Args:
+        df (pd.DataFrame): Input DataFrame.
+        date_column (str): Name of the column containing date values.
+    Returns:
+        pd.DataFrame: DataFrame with added 'year', 'month', 'day', and 'date_id' columns.
+    """
+
     df['year'] = pd.to_datetime(df[date_column]).dt.strftime('%Y').astype(int)
     df['month'] = pd.to_datetime(df[date_column]).dt.strftime('%m').astype(int)
     df['day'] = pd.to_datetime(df[date_column]).dt.strftime('%d').astype(int)
@@ -116,6 +125,14 @@ def creating_dateid(df,date_column):
 
 
 def drug_columns(df):
+    """
+    Converts drug-related columns to binary (0 or 1) and calculates the total drug count.
+    Args:
+        df (pd.DataFrame): Input DataFrame.
+    Returns:
+        pd.DataFrame: DataFrame with binary drug columns and a 'drug_count' column.
+    """
+
     columns = ['heroin','heroin_dc','cocaine','fentanyl','fentanylanalogue','oxycodone','oxymorphone','ethanol','hydrocodone','benzodiazepine','methadone','meth_amphetamine','amphet','tramad','hydromorphone','morphine_notheroin','xylazine','gabapentin','opiatenos','heroin_morph_codeine','other_opioid','anyopioid']
     df[columns] = df[columns].applymap(lambda x: 1 if x == 'Y' else 0)
     df['drug_count'] = df[columns].sum(axis=1)
@@ -123,12 +140,27 @@ def drug_columns(df):
 
 
 def standarize_categoricalcolumns(df):
+    """
+    Standardizes categorical columns by filling missing values and formatting strings.
+    Args:
+        df (pd.DataFrame): Input DataFrame.
+    Returns:
+        pd.DataFrame: DataFrame with standardized categorical columns.
+    """
+
     for i in df.select_dtypes(include=['object', 'string']).columns:
         df[i] = df[i].fillna('Unknown').str.strip().str.title()
     return df
 
 
 def remapping(df):
+    """
+    Replaces categorical values in specific columns using predefined mapping dictionaries.
+    Args:
+        df (pd.DataFrame): Input DataFrame.
+    Returns:
+        pd.DataFrame: DataFrame with remapped categorical values.
+    """
     df['mannerofdeath'] = df['mannerofdeath'].replace(manner_map)
     df['location'] = df['location'].replace(location_mapping)
     df['injurystate'] = df['injurystate'].replace(injurystate_mapping)
@@ -138,10 +170,25 @@ def remapping(df):
     return df
 
 def drop_column(df):
+    """
+    Drops the 'date' column from the DataFrame.
+    Args:
+        df (pd.DataFrame): Input DataFrame.
+    Returns:
+        pd.DataFrame: DataFrame without the 'date' column.
+    """
     df.drop(['date'],axis=1,inplace=True)
     return df
 
 def transform_data(ti):
+    """
+    Transforms the dataset by standardizing, remapping, and cleaning data.
+    Args:
+        ti (TaskInstance): Airflow TaskInstance object to pull and push data via XCom.
+    Returns:
+        pd.DataFrame: Transformed DataFrame.
+    """
+
     df_json = ti.xcom_pull(key='Dataset')
     df = pd.read_json(StringIO(df_json), orient='split')
 

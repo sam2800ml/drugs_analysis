@@ -6,9 +6,12 @@ from io import StringIO
 from sqlalchemy import DDL
 
 def loadingtransform_data(ti):
-
     """
-    
+    This function loads transformed data into PostgreSQL tables (`tdate_db` and `transformed_db`).
+    It retrieves the transformed dataset from XCom, processes it, and inserts it into the database.
+
+    Args:
+        ti (TaskInstance): Airflow TaskInstance object, used to pull data from XCom.
     """
 
     df_json = ti.xcom_pull(key='transform_Dataset')

@@ -4,10 +4,16 @@ import logging
 from sqlalchemy import create_engine, text
 from io import StringIO
 
-
-
-
 def test_loading(ti):
+    """
+    This function loads a dataset into the 'drug_database' table in PostgreSQL.
+    It retrieves the dataset from XCom, checks for its existence, and performs a bulk insert.
+    If the dataset is not found or an error occurs during insertion, appropriate errors are raised.
+
+    Args:
+        ti (TaskInstance): Airflow TaskInstance object, used to pull data from XCom.
+    """
+
     csv = ti.xcom_pull(key='Dataset')
     if not csv:
         raise ValueError("Not any csv found")

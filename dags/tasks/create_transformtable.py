@@ -5,6 +5,15 @@ from io import StringIO
 
 
 def create_transformdatabase(ti):
+    """
+    This function creates two tables in a PostgreSQL database:
+    1. `tdate_db`: A table to store date-related information.
+    2. `transformed_db`: A table to store transformed data with various attributes.
+
+    Args:
+        ti (TaskInstance): Airflow TaskInstance object, used for task context (not directly used here).
+    """
+    
     hook = PostgresHook(postgres_conn_id="postgres_database")
     conn = hook.get_conn()
     cursor = conn.cursor()
