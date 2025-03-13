@@ -3,4 +3,7 @@ config.yaml
 venv
 *.csv
 logs/
-
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
