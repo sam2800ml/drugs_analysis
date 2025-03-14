@@ -17,13 +17,18 @@ from sqlalchemy import create_engine, text
 from great_expectations_provider.operators.great_expectations import GreatExpectationsOperator
 from io import StringIO
 
-from tasks.datatransform_load import loadingtransform_data
+
 from tasks.load import load_dataset
 from tasks.test_loading import test_loading
 from tasks.Transform import transform_data
 from tasks.create_table import create_table
 from tasks.create_transformtable import create_transformdatabase
 
+from tasks.validation_transform import validation_transform
+from tasks.validation_transform_date import validation_transform_date
+
+from tasks.datetransform_load import loadingdatetransform_data
+from tasks.datatransform_load import loadingtransform_data
 
 default_args = {
     'owner':'airflow',
@@ -72,6 +77,7 @@ gx_validation_task = GreatExpectationsOperator(
     return_json_dict=True,
     dag=dag
 )
+
 transform_task = PythonOperator(
     task_id='Transformation',
     python_callable=transform_data,
@@ -82,7 +88,25 @@ transform_database = PythonOperator(
     python_callable=create_transformdatabase,
     dag=dag
 )
+validationtransform_database = PythonOperator(
+    task_id='validation_transform_database',
+    python_callable=validation_transform,
+    dag=dag
+)
 
+validationtransformdate_database = PythonOperator(
+    task_id='validation_transform_date_database',
+    python_callable=validation_transform_date,
+    dag=dag
+
+)
+
+loadtransformdate_db = PythonOperator(
+    task_id='Loading_transformdate_data',
+    python_callable=loadingdatetransform_data,
+    dag=dag
+
+)
 loadtransform_db = PythonOperator(
     task_id='Loading_transform_data',
     python_callable=loadingtransform_data,
@@ -109,5 +133,9 @@ gx_validation_task_date = GreatExpectationsOperator(
     return_json_dict=True,
     dag=dag
 )
-[load_dataset_task, create_table_task] >> test_loading_task >> gx_validation_task >> transform_task >> transform_database >> loadtransform_db >> [gx_validation_task_transform,gx_validation_task_date]
 
+[load_dataset_task, create_table_task]  >> test_loading_task >> gx_validation_task >> [transform_task, transform_database]
+transform_database >> validationtransform_database
+transform_database >> validationtransformdate_database
+transform_task >> validationtransform_database  >> loadtransform_db >> gx_validation_task_transform
+transform_task >> validationtransformdate_database >>  loadtransformdate_db >> gx_validation_task_date

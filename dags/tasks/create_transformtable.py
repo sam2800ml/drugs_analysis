@@ -90,7 +90,7 @@ def create_transformdatabase(ti):
         cursor.execute(create_date_table)
         cursor.execute(create_transform_table)
         conn.commit()
-        logging.info("Tables 'drug_database' created or already exists.")
+        logging.info("Tables 'transformed_db,tdate_db' created or already exists.")
     except Exception as e:
         conn.rollback()
         logging.error(f"Error creating table: {e}")
