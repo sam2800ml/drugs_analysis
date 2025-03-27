@@ -1,5 +1,5 @@
 """In this file is created the sql database where we are going to keep
-    all the raw data preprocess
+    all the raw data preprocess to be able to upload it
 """
 import logging
 from airflow.providers.postgres.hooks.postgres import PostgresHook
