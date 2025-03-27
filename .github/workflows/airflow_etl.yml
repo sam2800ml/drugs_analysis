@@ -49,7 +49,7 @@ jobs:
           with:
             context: .
             push: true
-            tags: ${{secrets.DOCKER_USERNAME}}/etl-druganalysis-app:latest
+            tags: ${{secrets.DOCKER_USERNAME}}/etl-druganalysis-application:latest
             
         - name: Image digest
           run: echo ${{steps.build-and-publish.outputs.digest}}
