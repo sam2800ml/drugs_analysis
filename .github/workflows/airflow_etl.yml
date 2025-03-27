@@ -23,7 +23,7 @@ jobs:
         run: docker compose up -d --build
 
       - name: Run tests
-        run: docker exec etl_project-airflow-webserver pytest /opt/airflow/tests
+        run: docker exec drugs_analysis-airflow-webserver-1 pytest /opt/airflow/tests
 
       - name: Stop and remove containers
         run: docker-compose down
