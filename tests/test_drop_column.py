@@ -11,7 +11,7 @@ if project_root not in sys.path:
 from dags.tasks.Transform import drop_column
 
 
-def test_creating_dateid():
+def test_drop_columns():
     """Testing the create_dateid function"""
     # Sample input DataFrame
     data = {'date': ['2012-05-29T00:00:00.000'], 'age': ['12'], "residencecitygeo": ["12.34532213"], "injurycitygeo": ["12.34532213"], "deathcitygeo": ["12.34532213"], "drug_column": [3]}
