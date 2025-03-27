@@ -1,5 +1,9 @@
-from airflow.providers.postgres.hooks.postgres import PostgresHook
+"""In this file is created the sql database where we are going to keep
+    all the raw data preprocess
+"""
 import logging
+from airflow.providers.postgres.hooks.postgres import PostgresHook
+
 
 def create_table():
     """Create the `drug_database` table in PostgreSQL if it doesn't exist."""
@@ -67,7 +71,7 @@ def create_table():
         logging.info("Table 'drug_database' created or already exists.")
     except Exception as e:
         conn.rollback()
-        logging.error(f"Error creating table: {e}")
+        logging.error("Error creating table:%s", e)
         raise
     finally:
         cursor.close()

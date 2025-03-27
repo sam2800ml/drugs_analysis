@@ -78,7 +78,7 @@
             },
             "expectation_type":"expect_column_to_exist",
             "kwargs":{
-                "column":"age"
+                "column":"age_groups"
             },
             "meta":{}
         },

@@ -63,6 +63,83 @@
                 "column":"sex"
             },
             "meta":{}
+        },
+        {
+            "expectation_context":{
+                "description":"the column gender exists"
+            },
+            "expectation_type":"expect_column_values_to_be_of_type",
+            "kwargs":{
+                "column":"sex",
+                "type_":"VARCHAR"
+            },
+            "meta":{}
+        },
+        {
+            "expectation_context":{
+                "description":"the column gender exists"
+            },
+            "expectation_type":"expect_column_values_to_be_of_type",
+            "kwargs":{
+                "column":"age",
+                "type_":"INTEGER"
+            },
+            "meta":{}
+        },
+        {
+            "expectation_context":{
+                "description":"the column gender exists"
+            },
+            "expectation_type":"expect_column_values_to_be_of_type",
+            "kwargs":{
+                "column":"date",
+                "type_":"VARCHAR"
+            },
+            "meta":{}
+        },
+        {
+            "expectation_context":{
+                "description":"the column gender exists"
+            },
+            "expectation_type":"expect_column_values_to_be_of_type",
+            "kwargs":{
+                "column":"datetype",
+                "type_":"VARCHAR"
+            },
+            "meta":{}
+        },
+        {
+            "expectation_context":{
+                "description":"the column gender exists"
+            },
+            "expectation_type":"expect_column_values_to_be_of_type",
+            "kwargs":{
+                "column":"race",
+                "type_":"VARCHAR"
+            },
+            "meta":{}
+        },
+        {
+            "expectation_context":{
+                "description":"the column gender exists"
+            },
+            "expectation_type":"expect_column_values_to_be_of_type",
+            "kwargs":{
+                "column":"ethnicity",
+                "type_":"VARCHAR"
+            },
+            "meta":{}
+        },
+        {
+            "expectation_context":{
+                "description":"the column gender exists"
+            },
+            "expectation_type":"expect_column_values_to_be_of_type",
+            "kwargs":{
+                "column":"location",
+                "type_":"VARCHAR"
+            },
+            "meta":{}
         }
     ]
 }
