@@ -1,19 +1,20 @@
-from airflow.providers.postgres.hooks.postgres import PostgresHook
+"""
+    Creating the two transform tables to load the data in their
+    perspective tables
+"""
 import logging
-import pandas as pd
-from io import StringIO
+from airflow.providers.postgres.hooks.postgres import PostgresHook
 
 
-def create_transformdatabase(ti):
+def create_transformdatabase():
     """
     This function creates two tables in a PostgreSQL database:
     1. `tdate_db`: A table to store date-related information.
-    2. `transformed_db`: A table to store transformed data with various attributes.
+    2. `transformed_db`: A table to store transformed data
+    with various attributes.
 
-    Args:
-        ti (TaskInstance): Airflow TaskInstance object, used for task context (not directly used here).
     """
-    
+    logging.info("Starting the creation the transform databases")
     hook = PostgresHook(postgres_conn_id="postgres_database")
     conn = hook.get_conn()
     cursor = conn.cursor()
@@ -27,14 +28,10 @@ def create_transformdatabase(ti):
         )
     """
 
-
-
-
     create_transform_table = """
         CREATE TABLE IF NOT EXISTS transformed_db(
             id SERIAL PRIMARY KEY,
             datetype VARCHAR(100),
-            age INT,
             sex VARCHAR(10),
             race VARCHAR(100),
             ethnicity VARCHAR(100),
@@ -77,12 +74,15 @@ def create_transformdatabase(ti):
             other_opioid VARCHAR(100),
             anyopioid VARCHAR(100),
             other VARCHAR(100),
-            residencecitygeo VARCHAR(100),
-            injurycitygeo VARCHAR(100),
-            deathcitygeo VARCHAR(100),
             date_id VARCHAR(8) REFERENCES tdate_db(date_id),
-            drug_count INT
-
+            drug_count INT,
+            residencecitygeo_latitude DECIMAL(9,6),
+            residencecitygeo_longitude DECIMAL(9,6),
+            injurycitygeo_latitude DECIMAL(9,6),
+            injurycitygeo_longitude DECIMAL(9,6),
+            deathcitygeo_latitude DECIMAL(9,6),
+            deathcitygeo_longitude DECIMAL(9,6),
+            age_groups VARCHAR(50)
         );
     """
 
@@ -90,12 +90,11 @@ def create_transformdatabase(ti):
         cursor.execute(create_date_table)
         cursor.execute(create_transform_table)
         conn.commit()
-        logging.info("Tables 'transformed_db,tdate_db' created or already exists.")
+        logging.info("Tables 'transformed_db,tdate_db' created or already exists")
     except Exception as e:
         conn.rollback()
-        logging.error(f"Error creating table: {e}")
+        logging.error("Error creating table: %s", e)
         raise
     finally:
         cursor.close()
         conn.close()
-

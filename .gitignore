@@ -1,9 +1,10 @@
 config.yaml
 .env
-venv
+venv/
 *.csv
 logs/
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+/secrets/

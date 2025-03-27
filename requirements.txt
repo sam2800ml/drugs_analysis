@@ -9,3 +9,6 @@ great-expectations
 matplotlib
 seaborn
 numpy
+apache-airflow[google]
+pytest
+pyyaml

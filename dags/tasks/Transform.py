@@ -1,13 +1,16 @@
-import pandas as pd
-from datetime import datetime
+"""Transformation beign used to be able to have the data structure better"""
 from io import StringIO
+import re
+import logging
+import pandas as pd
+
 
 manner_map = {
-    'Accident' : "Accident",
-    'Pending' : 'Pending',
-    'Unknown' : "Unknown",
-    'Natural' : "Natural",
-    'Acciddent':"Accident"
+    'Accident': "Accident",
+    'Pending': 'Pending',
+    'Unknown': "Unknown",
+    'Natural': "Natural",
+    'Acciddent': "Accident"
 }
 location_mapping = {
     'Residence': 'Residence',
@@ -53,7 +56,7 @@ injurycounty_mapping = {
     'Middlesex': 'Middlesex',
     'Fairfield': 'Fairfield',
     'New London': 'New London',
-    'Mnew London': 'New London',  # Fix typo
+    'Mnew London': 'New London',
     'Windham': 'Windham',
     'Litchfield': 'Litchfield',
     'Tolland': 'Tolland',
@@ -105,7 +108,7 @@ ethnicity_mapping = {
 }
 
 
-def creating_dateid(df,date_column):
+def creating_dateid(df, date_column):
     """
     Creates a 'date_id' column and extracts year, month, and day from a date column.
     Args:
@@ -114,13 +117,12 @@ def creating_dateid(df,date_column):
     Returns:
         pd.DataFrame: DataFrame with added 'year', 'month', 'day', and 'date_id' columns.
     """
-
+    logging.info("Starting creating the date_id")
     df['year'] = pd.to_datetime(df[date_column]).dt.strftime('%Y').astype(int)
     df['month'] = pd.to_datetime(df[date_column]).dt.strftime('%m').astype(int)
     df['day'] = pd.to_datetime(df[date_column]).dt.strftime('%d').astype(int)
     df['date_id'] = pd.to_datetime(df[date_column]).dt.strftime('%Y%m%d').astype(int)
-
-
+    logging.info("finish creating the date_id")
     return df
 
 
@@ -132,10 +134,16 @@ def drug_columns(df):
     Returns:
         pd.DataFrame: DataFrame with binary drug columns and a 'drug_count' column.
     """
-
-    columns = ['heroin','heroin_dc','cocaine','fentanyl','fentanylanalogue','oxycodone','oxymorphone','ethanol','hydrocodone','benzodiazepine','methadone','meth_amphetamine','amphet','tramad','hydromorphone','morphine_notheroin','xylazine','gabapentin','opiatenos','heroin_morph_codeine','other_opioid','anyopioid']
+    logging.info("Starting standarizing the drug columns")
+    columns = ['heroin', 'heroin_dc', 'cocaine', 'fentanyl',
+               'fentanylanalogue', 'oxycodone', 'oxymorphone', 'ethanol',
+               'hydrocodone', 'benzodiazepine', 'methadone',
+               'meth_amphetamine', 'amphet', 'tramad', 'hydromorphone',
+               'morphine_notheroin', 'xylazine', 'gabapentin', 'opiatenos',
+               'heroin_morph_codeine', 'other_opioid', 'anyopioid']
     df[columns] = df[columns].applymap(lambda x: 1 if x == 'Y' else 0)
     df['drug_count'] = df[columns].sum(axis=1)
+    logging.info("Finishing standarizing the drug columns")
     return df
 
 
@@ -147,15 +155,17 @@ def standarize_categoricalcolumns(df):
     Returns:
         pd.DataFrame: DataFrame with standardized categorical columns.
     """
-
+    logging.info("Starting standarizing categorical columns")
     for i in df.select_dtypes(include=['object', 'string']).columns:
         df[i] = df[i].fillna('Unknown').str.strip().str.title()
+    logging.info("Finishing standarizing categorical columns")
     return df
 
 
 def remapping(df):
     """
-    Replaces categorical values in specific columns using predefined mapping dictionaries.
+    Replaces categorical values in specific columns using predefined
+    mapping dictionaries.
     Args:
         df (pd.DataFrame): Input DataFrame.
     Returns:
@@ -169,6 +179,45 @@ def remapping(df):
     df['ethnicity'] = df['ethnicity'].replace(ethnicity_mapping)
     return df
 
+
+def extract_coordinates(df, columns):
+    """
+    Extracts latitude and longitude from specified columns in a DataFrame.
+
+    Parameters:
+    df (pd.DataFrame): The DataFrame containing the data.
+    columns (list of str): List of column names to process.
+
+    Returns:
+    pd.DataFrame: DataFrame with new columns for latitude and longitude.
+    """
+    # Regular expression pattern to match coordinates
+    coord_pattern = re.compile(r'\((-?\d+\.\d+),\s*(-?\d+\.\d+)\)')
+
+    for col in columns:
+        # Generate new column names for latitude and longitude
+        lat_col = f'{col}_latitude'
+        lon_col = f'{col}_longitude'
+
+        # Extract coordinates using the regular expression
+        coords = df[col].str.extract(coord_pattern)
+
+        # Assign extracted coordinates to new columns and convert to float
+        df[lat_col] = coords[0].astype(float)
+        df[lon_col] = coords[1].astype(float)
+    return df
+
+
+def age_groups(df):
+    """
+    Put in the age in groups to be able to analyze them better
+    """
+    bins = [0, 18, 30, 46, 60, float('inf')]
+    labels = ['0-18,Menores', '19-30,Jóvenes Adultos', '31-45,Adultos Jóvenes', '46-60,Adultos de Mediana Edad', '61+,Adultos Mayores']
+    df["age_groups"] = pd.cut(df["age"], bins=bins, labels=labels, right=True) # right=True it means that the right number is include
+    return df
+
+
 def drop_column(df):
     """
     Drops the 'date' column from the DataFrame.
@@ -177,8 +226,11 @@ def drop_column(df):
     Returns:
         pd.DataFrame: DataFrame without the 'date' column.
     """
-    df.drop(['date'],axis=1,inplace=True)
+    logging.info("Starting dropping date column")
+    df.drop(['date', 'age', 'residencecitygeo', 'injurycitygeo', 'deathcitygeo'], axis=1, inplace=True)
+    logging.info("Finishing dropping date column")
     return df
+
 
 def transform_data(ti):
     """
@@ -188,17 +240,19 @@ def transform_data(ti):
     Returns:
         pd.DataFrame: Transformed DataFrame.
     """
-
+    logging.info("Starting all the transformations")
     df_json = ti.xcom_pull(key='Dataset')
     df = pd.read_json(StringIO(df_json), orient='split')
-
     df = standarize_categoricalcolumns(df)
     df = creating_dateid(df, 'date')  # Change 'date' if using another column
     df = drug_columns(df)
     df = remapping(df)
+    columns_to_process = ['residencecitygeo', 'injurycitygeo', 'deathcitygeo']
+    df = extract_coordinates(df, columns_to_process)
+    df = age_groups(df)
     df = drop_column(df)
     df.replace("Unknown", None, inplace=True)
     df_json_transformed = df.to_json(orient="split")
-
+    logging.info("All transformations are completed, ready to push to database")
     ti.xcom_push(key="transform_Dataset", value=df_json_transformed)
     return df
