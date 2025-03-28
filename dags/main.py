@@ -1,6 +1,5 @@
-""" to be able to acces the postgress sql we type 
-on the terminal psql -h localhost -p 5432 -U airflow -d airflow
-airflow hook to be able to connect to postgresql database 
+"""
+This is the creation of a data flow using airflow
 """
 # Local imports
 from datetime import timedelta, datetime
