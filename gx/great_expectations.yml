@@ -19,14 +19,14 @@ datasources:
     execution_engine:
       class_name: SqlAlchemyExecutionEngine
       module_name: great_expectations.execution_engine
-      connection_string: postgresql+psycopg2://airflow:airflow@172.20.0.3:5432/airflow
+      connection_string: postgresql+psycopg2://airflow:airflow@172.20.0.6:5432/airflow
       create_temp_table: true
     data_connectors:
       default_configured_asset_sql_data_connector:
         class_name: ConfiguredAssetSqlDataConnector
         module_name: great_expectations.datasource.data_connector
         assets:
-          transformed_db:
+          tdate_db:
             class_name: Asset
             module_name: great_expectations.datasource.data_connector.asset
             schema_name: public

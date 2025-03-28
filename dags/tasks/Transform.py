@@ -220,7 +220,8 @@ def age_groups(df):
 
 def drop_column(df):
     """
-    Drops the 'date' column from the DataFrame.
+    Drops the 'date, age, residencecitygeo, injurycitygeo, deathcitygeo'
+    column from the DataFrame.
     Args:
         df (pd.DataFrame): Input DataFrame.
     Returns:
