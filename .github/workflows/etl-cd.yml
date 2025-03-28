@@ -1,4 +1,4 @@
-name: CI for ETL Project
+name: CD for ETL Project
 
 on:
   push:
@@ -8,28 +8,8 @@ on:
     branches:
       - main
 
-jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Build and run Docker Compose
-        run: docker compose up -d --build
-
-      - name: Run tests
-        run: docker exec drugs_analysis-airflow-webserver-1 pytest /opt/airflow/tests
-
-      - name: Stop and remove containers
-        run: docker compose down
-    
+jobs:    
   build-and-publish:
-    needs: build-and-test
     runs-on: ubuntu-latest
 
     steps:
